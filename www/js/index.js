@@ -2,7 +2,6 @@
 var app = {
     scanSeconds: 5,
     scanDelay: 2,
-    devices: [],
     initialize: function() {
         this.bindEvents();
     },
@@ -32,8 +31,25 @@ var app = {
       }, (((app.scanSeconds + app.scanDelay) * 2 ) + 2) * 1000 );
     },
     onScanSuccess: function(device) {
-        log("Found  " + JSON.stringify(device));
-        app.devices.push(device);
+        log("Found  " + JSON.stringify(device, null, '\t'));
+
+        var connectSuccess = function(peripheral) {
+            log("Connected to " + device.id);
+            // this logs services, characteristics and descriptors
+            log(JSON.stringify(peripheral, null, '\t'));
+
+            // disconnect after we get the info
+            ble.disconnect(device.id, function() {
+                log("Disconnected from " + device.id);
+            });
+        };
+
+        var connectFailure = function(reason) {
+            log("Failed to connect to " + device.id);
+        };
+
+        log("Connecting to " + device.id);
+        ble.connect(device.id, connectSuccess, connectFailure);
 
     },
     onScanFailure: function(reason) {
